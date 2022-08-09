@@ -1,0 +1,49 @@
+services:
+    mongo:
+        container_name: mongo
+        image: mongo:latest
+        ports:
+            - 27017:27017
+        networks:
+            - bhu-networks
+    rabbitmq:
+        container_name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+            - 5672:5672
+            - 15672:15672
+        volumes:
+            - ./dados:/var/lib/rabbitmq/
+        environment:
+            - RABBITMQ_DEFAULT_USER=admin
+            - RABBITMQ_DEFAULT_PASS=123456
+        networks:
+            - bhu-networks
+
+    connectionrabbitmq:
+        container_name: connectionrabbitmq
+        build:
+            context: ./connectionRabbitMq
+        ports:
+            - 8050:8050
+        depends_on:
+            - mongo
+            - rabbitmq
+        networks:
+            - bhu-networks
+
+    apibhu:
+        container_name: apibhu
+        build:
+            context: ./Api
+        ports:
+            - 8010:8010
+        depends_on:
+            - mongo
+            - rabbitmq
+            - connectionrabbitmq
+        networks:
+            - bhu-networks
+networks:
+    bhu-networks:
+        driver: bridge
